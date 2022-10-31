@@ -1,6 +1,7 @@
 #pragma once
 #include <allocator.h>
-#include <map>
+#include <collections/TreeDictionary.h>
+#include <collections/ArraySequence.h>
 #include <vector>
 #include <debug.h>
 
@@ -16,8 +17,8 @@ struct _IdRange
 	size_t max;
 };
 
-std::map<size_t, _Data> _sharedDataById;
-std::vector<_IdRange> _acquiredIds;
+TreeDictionary<size_t, _Data> _sharedDataById;
+ArraySequence<_IdRange> _acquiredIds;
 
 template <class T>
 class SharedPtr
@@ -25,39 +26,46 @@ class SharedPtr
 public:
 	SharedPtr()
 	{
-		DPRINTF("SharedPtr()");
+		id = getNextId();
+		init(nullptr);
 	}
 	
 	SharedPtr(T* ptr)
 	{
 		id = getNextId();
 		init(ptr);
-		DPRINTF("SharedPtr(%p)", ptr);
 	}
-
+	
+	SharedPtr(const SharedPtr<T> & ptr)
+	{
+		id = ptr.id;
+		incRefCount();
+	}
+	
 	SharedPtr & operator=(const SharedPtr & ptr)
 	{
-		DPRINTF("SharedPtr = SharedPtr(%p)", getPtr());
-		if(ptr.id == id) {
+		if(ptr.id == id)
+		{
+			incRefCount();
 			return *this;
 		}
+		
 		if(getRefCount() == 1)
 		{
 			delPtr();
-			setPtr(ptr.getPtr());
+			freeId();
 		}
 		else
 		{
 			decRefCount();
-			id = ptr.id;
-			incRefCount();
 		}
+		id = ptr.id;
+		incRefCount();
 		return *this;
 	}
 
-	SharedPtr & operator=(T* ptr) const
+	SharedPtr & operator=(T* ptr)
 	{
-		DPRINTF("SharedPtr = %p", ptr);
 		if(getRefCount() == 1)
 		{
 			delPtr();
@@ -71,22 +79,20 @@ public:
 		}
 		return *this;
 	}
-
-	SharedPtr(const SharedPtr<T> & ptr)
-	{
-		DPRINTF("SharedPtr(%p) copy", ptr.getPtr());
-		id = ptr.id;
-		incRefCount();
-	}
-
+	
 	~SharedPtr()
 	{
-		DPRINTF("~SharedPtr(%p)", getPtr());
 		decRefCount();
-		if(getRefCount() == 0) {
+		if(getRefCount() == 0)
+		{
 			delPtr();
 			freeId();
 		}
+	}
+	
+	T* getPtr() const
+	{
+		return (T*)_sharedDataById[id].ptr;
 	}
 	
 	T& operator*()
@@ -100,60 +106,61 @@ public:
 	}
 	
 private:
+	size_t id;
 	
-
-	size_t getNextId()
+	size_t getNextId() const
 	{
-		if(_acquiredIds.size() == 0)
+		if(_acquiredIds.GetLength() == 0)
 		{
-			_acquiredIds.push_back({.min=0, .max=0});
+			_acquiredIds.Append({.min=0, .max=0});
 			return 0;
 		}
 		
-		if(_acquiredIds.front().min > 0)
+		if(_acquiredIds[0].min > 0)
 		{
-			_acquiredIds.front().min--;
+			_acquiredIds[0].min--;
 			return _acquiredIds[0].min;
 		}
 		
-		for(size_t i = 0; i < (_acquiredIds.size()-1); ++i)
+		for(size_t i = 0; i < (_acquiredIds.GetLength()-1); ++i)
 		{
-			if(_acquiredIds[i].max + 1 != _acquiredIds[i].min) {
+			if(_acquiredIds[i].max + 1 != _acquiredIds[i+1].min) {
 				_acquiredIds[i].max++;
 				return _acquiredIds[i].max;
 			}
 		}
 		
-		_acquiredIds.back().max++;
-		return _acquiredIds.back().max;
+		_acquiredIds[_acquiredIds.GetLength() - 1].max++;
+		return _acquiredIds[_acquiredIds.GetLength() - 1].max;
 	}
 
 	void freeId()
 	{
-		for(auto i = _acquiredIds.begin(); i != _acquiredIds.end(); i++)
+		_sharedDataById.Remove(id);
+		for(size_t i = 0; i < _acquiredIds.GetLength(); i++)
 		{
-			if(i->min <= id && id <= i->max) {
-				if(i->min == i->max)
+			_IdRange & range = _acquiredIds[i];
+			if(range.min <= id && id <= range.max) {
+				if(range.min == range.max)
 				{
-					_acquiredIds.erase(i);
+					_acquiredIds.RemoveAt(i);
 					return;
 				}
 				
-				if(i->min == id)
+				if(range.min == id)
 				{
-					i->min++;
+					range.min++;
 					return;
 				}
 				
-				if(i->max == id)
+				if(range.max == id)
 				{
-					i->max--;
+					range.max--;
 					return;
 				}
 				
-				
-				_acquiredIds.insert(i, {.min = id+1, .max = i->max});
-				i->max = id;
+				_acquiredIds.InsertAt({.min = id+1, .max = range.max}, i);
+				range.max = id;
 			}
 		}
 	}
@@ -166,11 +173,6 @@ private:
 	void setPtr(T* ptr)
 	{
 		_sharedDataById[id].ptr = (void*)ptr;
-	}
-	
-	T* getPtr() const
-	{
-		return (T*)_sharedDataById[id].ptr;
 	}
 	
 	size_t getRefCount() const
@@ -190,9 +192,6 @@ private:
 	
 	void init(T* ptr)
 	{
-		_sharedDataById[id].ptr = (void*)ptr;
-		_sharedDataById[id].refs = 1;
+		_sharedDataById.Add(id, {.ptr=(void*)ptr, .refs=1});
 	}
-	
-	size_t id;
 };

@@ -5,13 +5,9 @@
 #include <cstdio>
 #include <algorithm>
 #include <pointers.h>
+#include <collections/TreeDictionary.h>
 
 using namespace std;
-
-
-
-
-
 
 
 char mem[1024];
@@ -22,33 +18,36 @@ class Test
 static size_t maxId;
 public:
 	size_t id;
+	size_t dummy1;
+	
 	Test() {
 		id = maxId+1;
 		maxId++;
-		printf("Test %d создан\n", id);
+		printf("Test %zu создан\n", id);
 	}
 	
 	~Test()
 	{
-		printf("Test %d умер\n", id);
+		printf("Test %zu умер\n", id);
 	}
 	
-	//~ operator new()
-	//~ {
-		
-	//~ }
+	void f() {
+		printf("Test::f()\n");
+	}
+	
+	void* operator new(size_t size)
+	{
+		return a.alloc(size);
+	}
+	
+	void operator delete(void* ptr) throw()
+	{
+		a.free(ptr);
+	}
 };
 size_t Test::maxId = 0;
 
 int main()
 {
-	//~ DPRINTF("mem=%p\n", (void*)mem);
-	//~ DPRINTF("%s\n", "alloc");
-	//~ void* m1 = a.alloc(sizeof(int), sizeof(int));
-	//~ DPRINTF("%s\n", "free");
-	//~ a.free(m1);
-	
-	//~ a.free(a.alloc(7, sizeof(int)));
-	//~ a.free(a.alloc(7, sizeof(int)));
-	//~ a.free(a.alloc(7, sizeof(int)));
+	SharedPtr<Test> a = new Test();
 }
