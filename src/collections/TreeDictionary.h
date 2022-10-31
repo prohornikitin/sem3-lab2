@@ -9,6 +9,7 @@
 #include <sstream>
 #include <functional>
 #include <optional>
+#include <tuple>
 
 
 template <class K, class V>
@@ -186,41 +187,6 @@ private:
 		return n;
 	}
 
-	void ToStringInternal(
-		std::stringstream & ss,
-		const std::string format[4],
-		const char nodes[3], Node* n) const
-	{
-		if(n == nullptr)
-		{
-			return;
-		}
-		
-		if(n->left == nullptr && n->right == nullptr)
-		{
-			ss << n->key;
-			return;
-		}
-		
-		for(size_t i=0; i<3; i++)
-		{
-			ss << format[i];
-			if(nodes[i] == 'L')
-			{
-				ToStringInternal(ss, format, nodes, n->left);
-			}
-			else if(nodes[i] == 'R')
-			{
-				ToStringInternal(ss, format, nodes, n->right);
-			}
-			else //nodes[i] == 'N'
-			{
-				ss << n->key;
-			}
-		}
-		ss << format[3];
-	}
-
 	void DeleteAll(Node* r)
 	{
 		if(r == nullptr)
@@ -251,14 +217,23 @@ private:
 		{
 			return a == b;
 		}
-		return a.key == b.key &&
-			a.value == b.value &&
+		return a->key == b->key &&
+			a->value == b->value &&
 			TreeEqualInternal(a->right, b->right) &&
 			TreeEqualInternal(a->left, b->left);
 	}
 
 public:
 	using Cmp = std::function<bool(const K & a, const K & b)>;
+	
+	TreeDictionary(std::initializer_list<std::pair<K, V>> list)
+		: TreeDictionary()
+	{
+		for(auto i : list)
+		{
+			Add(i.first, i.second);
+		}
+	}
 	
 	TreeDictionary()
 		: cmpLess(([](const K & a, const K & b){return a < b;}))
@@ -291,6 +266,19 @@ public:
 		DeleteAll(root);
 		root = new_root;
 		cmpLess = other.cmpLess;
+		return *this;
+	}
+	
+	TreeDictionary<K,V> & operator=(std::initializer_list<std::pair<K, V>> list)
+	{
+		DeleteAll(root);
+		root = nullptr;
+		
+		for(auto i : list)
+		{
+			Add(i.first, i.second);
+		}
+		
 		return *this;
 	}
 
