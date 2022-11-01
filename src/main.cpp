@@ -1,11 +1,10 @@
-#define DEBUG
-
-#include <cstdint>
-#include <cstddef>
-#include <cstdio>
 #include <algorithm>
-#include <pointers.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <new>
 #include <collections/TreeDictionary.h>
+#include <pointers.h>
 
 using namespace std;
 
@@ -13,41 +12,93 @@ using namespace std;
 char mem[1024];
 Allocator a(mem, 1024);
 
-class Test
+
+class Obj
 {
 static size_t maxId;
 public:
 	size_t id;
-	size_t dummy1;
 	
-	Test() {
+	Obj() {
 		id = maxId+1;
 		maxId++;
-		printf("Test %zu создан\n", id);
+		printf("Obj %zu создан\n", id);
 	}
 	
-	~Test()
+	~Obj()
 	{
-		printf("Test %zu умер\n", id);
+		printf("Obj %zu уничтожается\n", id);
 	}
 	
-	void f() {
-		printf("Test::f()\n");
-	}
-	
-	void* operator new(size_t size)
+	void F()
 	{
-		return a.alloc(size);
+		printf("Obj %zu F()\n", id);
 	}
 	
-	void operator delete(void* ptr) throw()
+	
+	void* operator new(size_t size) noexcept
 	{
-		a.free(ptr);
+		return a.Alloc(size);
+	}
+	
+	void* operator new(size_t size, std::align_val_t alignment) noexcept
+	{
+		return a.Alloc(size, (size_t)alignment);
+	}
+	
+	void* operator new[](size_t size) noexcept
+	{
+		return a.Alloc(size);
+	}
+	
+	void* operator new[](size_t size, std::align_val_t alignment) noexcept
+	{
+		return a.Alloc(size, (size_t)alignment);
+	}
+	
+	void operator delete(void* ptr) noexcept
+	{
+		a.Free(ptr);
+	}
+	
+	void operator delete[](void* ptr) noexcept
+	{
+		a.Free(ptr);
+	}
+	
+	void operator delete(void* ptr, std::align_val_t alignment) noexcept
+	{
+		a.Free(ptr);
+	}
+	
+	void operator delete[](void* ptr, std::align_val_t alignment) noexcept
+	{
+		a.Free(ptr);
 	}
 };
-size_t Test::maxId = 0;
+size_t Obj::maxId = 0;
+
+class HugeObj : public Obj
+{
+	size_t a[100];
+};
 
 int main()
 {
-	SharedPtr<Test> a = new Test();
+	printf("\n");
+	
+	SharedPtr a = new Obj();
+	a->F();
+	printf("\n");
+	
+	SharedPtr b = new HugeObj();
+	printf("\n");
+	
+	Obj* array = new Obj[10];
+	printf("\n");
+	delete[] array;
+	printf("\n");
+	
+	Obj* tooLargeArray = new Obj[100];
+	printf("\n");
 }
