@@ -14,7 +14,7 @@ CPP.FLAGS := -pedantic -Wall -Wextra -I$(INCLUDE_DIR) -std=c++20
 ifeq ($(BUILD),release)
 	CPP.FLAGS += -Ofast
 else
-	CPP.FLAGS += -g -O0 -lgtest -D DEBUG
+	CPP.FLAGS += -g -O0 -D DEBUG
 endif
 
 CPP.SRC := $(shell find $(SRC_DIR) -name '*.cpp')
@@ -38,7 +38,7 @@ test-vg: $(TEST_EXECUTABLE)
 
 $(TEST_EXECUTABLE): $(CPP.TEST) $(CPP.HEADERS)
 	mkdir -p $(BUILD_DIR)
-	$(CPP.COMPILER) $(CPP.TEST) $(CPP.FLAGS) -o $(TEST_EXECUTABLE)
+	$(CPP.COMPILER) $(CPP.TEST) $(CPP.FLAGS) -lgtest -o $(TEST_EXECUTABLE)
 
 $(EXECUTABLE): $(CPP.SRC) $(CPP.HEADERS)
 	mkdir -p $(BUILD_DIR)
