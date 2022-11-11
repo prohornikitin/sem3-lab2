@@ -91,7 +91,7 @@ public:
 		return result;
 	}
 
-	Sequence<T>* Map(std::function<T(const T &)> f) const 
+	Sequence<T>* Map(std::function<T(const T &)> f) const
 	{
 		Sequence<T>* sequence = emptyOfTheSameType();
 		for(size_t i = 0; i < GetLength(); ++i)
