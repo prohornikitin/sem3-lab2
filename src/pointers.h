@@ -104,6 +104,10 @@ public:
 	{
 		return getPtr();
 	}
+
+	operator bool() const {
+		return getPtr() != nullptr;
+	}
 	
 private:
 	size_t id;
@@ -194,4 +198,73 @@ private:
 	{
 		_sharedDataById.Add(id, {.ptr=(void*)ptr, .refs=1});
 	}
+};
+
+
+template <class T>
+class UniquePtr {
+public:
+	UniquePtr()
+	{
+		
+	}
+
+	UniquePtr(T* ptr)
+	{
+		raw = ptr;
+	}
+
+	UniquePtr(UniquePtr<T> & ptr) = delete;
+	UniquePtr(const UniquePtr<T> & ptr) = delete;
+
+	UniquePtr(UniquePtr<T> && ptr)
+	{
+		raw = ptr.raw;
+		ptr.raw = nullptr;
+	}
+
+	UniquePtr<T> & operator=(T* newRaw)
+	{
+		delete raw;
+		raw = newRaw;
+		return *this;
+	}
+
+	UniquePtr<T> & operator=(const UniquePtr<T> & ptr) = delete;
+
+	UniquePtr<T> & operator=(UniquePtr<T> && ptr)
+	{
+		delete raw;
+		raw = ptr.raw;
+		ptr.raw = nullptr;
+		return *this;
+	}
+
+	~UniquePtr()
+	{
+		delete raw;
+	}
+
+	T* getPtr() const
+	{
+		return raw;
+	}
+
+	operator bool() const {
+		return raw != nullptr;
+	}
+
+	T& operator*()
+	{
+		return *raw;
+	}
+
+	T* operator->()
+	{
+		return raw;
+	}
+
+private:
+
+	T* raw = nullptr;
 };

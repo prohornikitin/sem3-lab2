@@ -139,3 +139,77 @@ TEST(SharedPtr, assignSharedToAnother)
 }
 
 
+TEST(UniquePtr, simpleWrap)
+{
+	{
+		UniquePtr unique = new Obj();
+		ASSERT_EQ(Obj::count, 1);
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
+
+
+
+TEST(UniquePtr, move)
+{
+	{
+		UniquePtr unique = new Obj();
+		UniquePtr unique2 = std::move(unique);
+		ASSERT_EQ(Obj::count, 1);
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
+
+TEST(UniquePtr, assignPtrToEmpty)
+{
+	{
+		UniquePtr<Obj> unique;
+		unique = new Obj();
+		ASSERT_EQ(Obj::count, 1);
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
+
+TEST(UniquePtr, assignPtrToAnother)
+{
+	{
+		UniquePtr unique = new Obj();
+		ASSERT_EQ(Obj::count, 1);
+		unique = new Obj();
+		ASSERT_EQ(Obj::count, 1);
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
+
+TEST(UniquePtr, getPtr)
+{
+	{
+		Obj * ptr = new Obj();
+		ASSERT_EQ(Obj::count, 1);
+		UniquePtr unique = ptr;
+		ASSERT_EQ(ptr, unique.getPtr());
+		ASSERT_EQ(Obj::count, 1);
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
+
+TEST(UniquePtr, memberAccess)
+{
+	{
+		SharedPtr unique = new Obj();
+		ASSERT_TRUE(unique->True());
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
+
+TEST(UniquePtr, dereference)
+{
+	{
+		SharedPtr unique = new Obj();
+		ASSERT_EQ(Obj::count, 1);
+		Obj valueCopy = *unique;
+		ASSERT_EQ(Obj::count, 2);
+		ASSERT_TRUE(valueCopy.True());
+	}
+	ASSERT_EQ(Obj::count, 0);
+}
