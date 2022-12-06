@@ -4,6 +4,7 @@
 #include <collections/ArraySequence.h>
 #include <vector>
 #include <debug.h>
+#include <memory>
 
 struct _Data
 {
@@ -23,27 +24,34 @@ ArraySequence<_IdRange> _acquiredIds;
 template <class T>
 class SharedPtr
 {
+private:
+using Deleter = std::function<void(T*)>;
+static auto constexpr defaultDeleter = [](T* t){delete t;};
 public:
-	SharedPtr()
+	SharedPtr(Deleter deleter = defaultDeleter)
 	{
+		this->deleter = deleter;
 		id = getNextId();
 		init(nullptr);
 	}
 	
-	SharedPtr(T* ptr)
+	SharedPtr(T* ptr, Deleter deleter = defaultDeleter)
 	{
+		this->deleter = deleter;
 		id = getNextId();
 		init(ptr);
 	}
 	
 	SharedPtr(const SharedPtr<T> & ptr)
 	{
+		deleter = ptr.deleter;
 		id = ptr.id;
 		incRefCount();
 	}
 	
 	SharedPtr & operator=(const SharedPtr & ptr)
 	{
+		deleter = ptr.deleter;
 		if(ptr.id == id)
 		{
 			incRefCount();
@@ -111,6 +119,7 @@ public:
 	
 private:
 	size_t id;
+	Deleter deleter;
 	
 	size_t getNextId() const
 	{
@@ -171,7 +180,7 @@ private:
 	
 	void delPtr()
 	{
-		delete ((T*)_sharedDataById[id].ptr);
+		deleter((T*)_sharedDataById[id].ptr);
 	}
 	
 	void setPtr(T* ptr)
@@ -203,14 +212,18 @@ private:
 
 template <class T>
 class UniquePtr {
+private:
+using Deleter = std::function<void(T*)>;
+static auto defaultDeleter = [](T* t){delete t;};
 public:
 	UniquePtr()
 	{
 		
 	}
 
-	UniquePtr(T* ptr)
+	UniquePtr(T* ptr, Deleter deleter = std::default_delete<T>())
 	{
+		this->deleter = deleter;
 		raw = ptr;
 	}
 
@@ -225,7 +238,7 @@ public:
 
 	UniquePtr<T> & operator=(T* newRaw)
 	{
-		delete raw;
+		deleter(raw);
 		raw = newRaw;
 		return *this;
 	}
@@ -234,7 +247,7 @@ public:
 
 	UniquePtr<T> & operator=(UniquePtr<T> && ptr)
 	{
-		delete raw;
+		deleter(raw);
 		raw = ptr.raw;
 		ptr.raw = nullptr;
 		return *this;
@@ -242,7 +255,7 @@ public:
 
 	~UniquePtr()
 	{
-		delete raw;
+		deleter(raw);
 	}
 
 	T* getPtr() const
@@ -265,6 +278,6 @@ public:
 	}
 
 private:
-
+	Deleter deleter;
 	T* raw = nullptr;
 };

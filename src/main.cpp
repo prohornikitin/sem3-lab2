@@ -9,8 +9,7 @@
 using namespace std;
 
 
-char mem[1024];
-Allocator a(mem, 1024);
+
 
 
 class Obj
@@ -34,48 +33,8 @@ public:
 	{
 		printf("Obj %zu F()\n", id);
 	}
-	
-	
-	void* operator new(size_t size) noexcept
-	{
-		return a.Alloc(size);
-	}
-	
-	void* operator new(size_t size, std::align_val_t alignment) noexcept
-	{
-		return a.Alloc(size, (size_t)alignment);
-	}
-	
-	void* operator new[](size_t size) noexcept
-	{
-		return a.Alloc(size);
-	}
-	
-	void* operator new[](size_t size, std::align_val_t alignment) noexcept
-	{
-		return a.Alloc(size, (size_t)alignment);
-	}
-	
-	void operator delete(void* ptr) noexcept
-	{
-		a.Free(ptr);
-	}
-	
-	void operator delete[](void* ptr) noexcept
-	{
-		a.Free(ptr);
-	}
-	
-	void operator delete(void* ptr, std::align_val_t alignment) noexcept
-	{
-		a.Free(ptr);
-	}
-	
-	void operator delete[](void* ptr, std::align_val_t alignment) noexcept
-	{
-		a.Free(ptr);
-	}
 };
+
 size_t Obj::maxId = 0;
 
 class HugeObj : public Obj
@@ -85,20 +44,22 @@ class HugeObj : public Obj
 
 int main()
 {
+	char mem[1024];
+	Allocator a(mem, 1024);
+	
+	printf("\n");
+	SharedPtr s1(new(a) Obj(), a.GetDeleter<Obj>());
+	s1->F();
 	printf("\n");
 	
-	SharedPtr a = new Obj();
-	a->F();
+	SharedPtr s2(new(a) HugeObj(), a.GetDeleter<HugeObj>());
 	printf("\n");
 	
-	SharedPtr b = new HugeObj();
+/*	Obj* array = new(a) Obj[10];
+	printf("\n");
+	delete[] (a) array;
 	printf("\n");
 	
-	Obj* array = new Obj[10];
-	printf("\n");
-	delete[] array;
-	printf("\n");
-	
-	Obj* tooLargeArray = new Obj[100];
-	printf("\n");
+	Obj* tooLargeArray = new(a) Obj[100];
+	printf("\n");*/
 }

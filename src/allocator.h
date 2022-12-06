@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
+#include <functional>
 
 class Allocator
 {
@@ -11,6 +12,14 @@ public:
 	void* Alloc(size_t size);
 	void* AllocArray(size_t size);
 	void Free(void* ptr);
+	
+	template<class T>
+	std::function<void(T*)> GetDeleter() {
+		return [&](T* o){
+			o->~T();
+			Free(o);
+		};
+	}
 private:
 	char* memory = nullptr;
 	size_t size;
@@ -23,3 +32,8 @@ private:
 	void MergeFreeZones(Zone* first);
 };
 
+
+void* operator new(size_t size, Allocator & a) noexcept;
+void* operator new(size_t size, std::align_val_t alignment, Allocator & a) noexcept;
+void* operator new[](size_t size, Allocator & a) noexcept;
+void* operator new[](size_t size, std::align_val_t alignment, Allocator & a) noexcept;

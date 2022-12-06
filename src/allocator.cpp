@@ -120,3 +120,24 @@ void Allocator::Free(void* ptr)
 	}
 	DPRINTF("memory %p was allocated by another allocator and so cannot be freed", ptr);
 }
+
+
+void* operator new(size_t size, Allocator & a) noexcept
+{
+	return a.Alloc(size);
+}
+
+void* operator new(size_t size, std::align_val_t alignment, Allocator & a) noexcept
+{
+	return a.Alloc(size, (size_t)alignment);
+}
+
+void* operator new[](size_t size, Allocator & a) noexcept
+{
+	return a.Alloc(size);
+}
+
+void* operator new[](size_t size, std::align_val_t alignment, Allocator & a) noexcept
+{
+	return a.Alloc(size, (size_t)alignment);
+}
