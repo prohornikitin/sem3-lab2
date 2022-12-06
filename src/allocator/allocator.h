@@ -1,4 +1,5 @@
 #pragma once
+#include <allocator/buffer.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -11,7 +12,6 @@ public:
 
 	void * Alloc(size_t size, size_t alignment);
 	void * Alloc(size_t size);
-	void * AllocArray(size_t size);
 	void Free(void * ptr);
 
 	template <class T>
@@ -23,17 +23,10 @@ public:
 		};
 	}
 
+	const Buffer & GetBuffer();
+
 private:
-	char * memory = nullptr;
-	size_t size;
-
-	struct Zone
-	{
-		uint64_t size;
-		bool isFree;
-	};
-
-	void MergeFreeZones(Zone * first);
+	Buffer buffer;
 };
 
 void * operator new(size_t size, Allocator & a) noexcept;

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <pointers.h>
+#include <pointers/pointers.h>
 
 class Obj
 {
