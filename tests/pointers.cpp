@@ -5,22 +5,22 @@ class Obj
 {
 public:
 	static size_t count;
-	
+
 	Obj()
 	{
 		count++;
 	}
-	
+
 	Obj(const Obj & obj)
 	{
 		count++;
 	}
-	
+
 	bool True()
 	{
 		return true;
 	}
-	
+
 	~Obj()
 	{
 		count--;
@@ -28,7 +28,6 @@ public:
 };
 
 size_t Obj::count = 0;
-
 
 TEST(SharedPtr, simpleWrap)
 {
@@ -39,14 +38,13 @@ TEST(SharedPtr, simpleWrap)
 	ASSERT_EQ(Obj::count, 0);
 }
 
-
 TEST(SharedPtr, getPtr)
 {
 	{
 		Obj * ptr = new Obj();
 		ASSERT_EQ(Obj::count, 1);
 		SharedPtr shared = ptr;
-		ASSERT_EQ(ptr, shared.getPtr());
+		ASSERT_EQ(ptr, shared.GetPtr());
 		ASSERT_EQ(Obj::count, 1);
 	}
 	ASSERT_EQ(Obj::count, 0);
@@ -86,7 +84,6 @@ TEST(SharedPtr, copy)
 	ASSERT_EQ(Obj::count, 0);
 }
 
-
 TEST(SharedPtr, assignPtrToEmpty)
 {
 	{
@@ -96,7 +93,6 @@ TEST(SharedPtr, assignPtrToEmpty)
 	}
 	ASSERT_EQ(Obj::count, 0);
 }
-
 
 TEST(SharedPtr, assignPtrToAnother)
 {
@@ -111,7 +107,6 @@ TEST(SharedPtr, assignPtrToAnother)
 	ASSERT_EQ(Obj::count, 0);
 }
 
-
 TEST(SharedPtr, assignSharedToEmpty)
 {
 	{
@@ -123,7 +118,6 @@ TEST(SharedPtr, assignSharedToEmpty)
 	}
 	ASSERT_EQ(Obj::count, 0);
 }
-
 
 TEST(SharedPtr, assignSharedToAnother)
 {
@@ -138,7 +132,6 @@ TEST(SharedPtr, assignSharedToAnother)
 	ASSERT_EQ(Obj::count, 0);
 }
 
-
 TEST(UniquePtr, simpleWrap)
 {
 	{
@@ -147,8 +140,6 @@ TEST(UniquePtr, simpleWrap)
 	}
 	ASSERT_EQ(Obj::count, 0);
 }
-
-
 
 TEST(UniquePtr, move)
 {
@@ -187,7 +178,7 @@ TEST(UniquePtr, getPtr)
 		Obj * ptr = new Obj();
 		ASSERT_EQ(Obj::count, 1);
 		UniquePtr unique = ptr;
-		ASSERT_EQ(ptr, unique.getPtr());
+		ASSERT_EQ(ptr, unique.GetPtr());
 		ASSERT_EQ(Obj::count, 1);
 	}
 	ASSERT_EQ(Obj::count, 0);

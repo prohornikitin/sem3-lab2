@@ -1,31 +1,36 @@
 #pragma once
 
-#include "Sequence.h"
-#include "DynamicArray.h"
 #include <initializer_list>
+
+#include "DynamicArray.h"
+#include "Sequence.h"
 
 template <class T>
 class ArraySequence : public Sequence<T>
 {
 public:
 	ArraySequence() :
-		array(new DynamicArray<T>(0)) {}
-	
+		array(new DynamicArray<T>(0))
+	{}
+
 	ArraySequence(std::initializer_list<T> init) :
-		array(new DynamicArray<T>(init)) {}
+		array(new DynamicArray<T>(init))
+	{}
 
 	ArraySequence(size_t count) :
-		array(new DynamicArray<T>(count)) {}
+		array(new DynamicArray<T>(count))
+	{}
 
 	ArraySequence(const ArraySequence<T> & sequence) :
-		array(new DynamicArray<T>(*sequence.array)) {}
+		array(new DynamicArray<T>(*sequence.array))
+	{}
 
-	virtual Sequence<T> * copy() const override
+	virtual Sequence<T> * Copy() const override
 	{
 		return new ArraySequence<T>(*this);
 	}
 
-	virtual Sequence<T> * emptyOfTheSameType() const override
+	virtual Sequence<T> * EmptyOfTheSameType() const override
 	{
 		return new ArraySequence<T>();
 	}
@@ -35,7 +40,7 @@ public:
 		return array->Get(index);
 	}
 
-	virtual T& operator[](size_t index) override
+	virtual T & operator[](size_t index) override
 	{
 		return (*array)[index];
 	}
@@ -57,28 +62,31 @@ public:
 
 	virtual void InsertAt(T item, size_t index) override
 	{
-		if(index <= array->GetSize()) {
-			array->Resize(array->GetSize()+1);
-			for(size_t i = index; i < array->GetSize()-1; ++i)
+		if(index <= array->GetSize())
+		{
+			array->Resize(array->GetSize() + 1);
+			for(size_t i = index; i < array->GetSize() - 1; ++i)
 			{
-				(*array)[i+1] = (*array)[i];
+				(*array)[i + 1] = (*array)[i];
 			}
 			(*array)[index] = item;
-		} else {
-			array->Resize(index+1);
+		}
+		else
+		{
+			array->Resize(index + 1);
 			(*array)[index] = item;
 		}
-		
 	}
 
-	virtual void RemoveAt(size_t index) override {
-		for(size_t i = index+1; i < GetLength(); ++i)
+	virtual void RemoveAt(size_t index) override
+	{
+		for(size_t i = index + 1; i < GetLength(); ++i)
 		{
-			(*array)[i-1] = (*array)[i];
+			(*array)[i - 1] = (*array)[i];
 		}
-		array->Resize(array->GetSize()-1);
+		array->Resize(array->GetSize() - 1);
 	}
-	
+
 	virtual ~ArraySequence()
 	{
 		delete array;
@@ -88,6 +96,6 @@ private:
 	DynamicArray<T> * array;
 
 	ArraySequence(DynamicArray<T> * array) :
-		array(array) {}
+		array(array)
+	{}
 };
-

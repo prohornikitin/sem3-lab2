@@ -1,16 +1,16 @@
 #pragma once
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 
 #ifdef DEBUG
-#	define DPRINTF(...) \
-		std::fprintf(stderr, __VA_ARGS__); \
-		std::fprintf(stderr, "\n");
+#define DPRINTF(...)                   \
+	std::fprintf(stderr, __VA_ARGS__); \
+	std::fprintf(stderr, "\n");
 #else
-#	define DPRINTF(...)
+#define DPRINTF(...)
 #endif
 
-#define FATAL(...) \
+#define FATAL(...)                     \
 	std::fprintf(stderr, __VA_ARGS__); \
-	std::fprintf(stderr, "\n"); \
+	std::fprintf(stderr, "\n");        \
 	std::exit(1);

@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-
 int main()
 {
 	::testing::InitGoogleTest();

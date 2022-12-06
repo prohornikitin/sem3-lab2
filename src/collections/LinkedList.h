@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stdexcept>
 #include <debug.h>
+
+#include <stdexcept>
 
 template <class T>
 class LinkedList
@@ -10,17 +11,18 @@ public:
 	LinkedList() = default;
 	LinkedList(std::initializer_list<T> init)
 	{
-		size_t i=0;
-		for(auto k : init) {
+		size_t i = 0;
+		for(auto k : init)
+		{
 			Append(k);
 			i++;
 		}
 	}
-	
-	LinkedList(T* items, size_t count)
+
+	LinkedList(T * items, size_t count)
 	{
-		//TODO: Optimize
-		for(size_t i=0; i < count; ++i)
+		// TODO: Optimize
+		for(size_t i = 0; i < count; ++i)
 		{
 			Append(items[i]);
 		}
@@ -28,8 +30,8 @@ public:
 
 	LinkedList(const LinkedList & list)
 	{
-		//TODO: Optimize
-		for(size_t i=0; i < list.length; ++i)
+		// TODO: Optimize
+		for(size_t i = 0; i < list.length; ++i)
 		{
 			Append(list.Get(i));
 		}
@@ -50,16 +52,16 @@ public:
 		return GetNode(index)->data;
 	}
 
-	T& GetRef(size_t index)
+	T & GetRef(size_t index)
 	{
 		return GetNode(index)->data;
 	}
 
-	LinkedList<T>* GetSubList(size_t startIndex, size_t endIndex) const
+	LinkedList<T> * GetSubList(size_t startIndex, size_t endIndex) const
 	{
-		LinkedList<T>* subList = new LinkedList<T>();
+		LinkedList<T> * subList = new LinkedList<T>();
 		auto endNode = GetNode(endIndex);
-		for(Node* i = GetNode(startIndex); i != endNode->next; i = i->next)
+		for(Node * i = GetNode(startIndex); i != endNode->next; i = i->next)
 		{
 			subList->Append(i->data);
 		}
@@ -83,19 +85,19 @@ public:
 
 	void InsertAt(T item, size_t index)
 	{
-		if (index > length)
+		if(index > length)
 		{
-			while (index >= length)
+			while(index >= length)
 			{
-				Node* node = new Node(item, tail, nullptr);
+				Node * node = new Node(item, tail, nullptr);
 				tail->next = node;
 				tail = node;
 				length++;
 			}
 			return;
 		}
-		Node* prev = nullptr;
-		Node* next = nullptr;
+		Node * prev = nullptr;
+		Node * next = nullptr;
 		if(index == 0)
 		{
 			prev = nullptr;
@@ -108,12 +110,11 @@ public:
 		}
 		else
 		{
-			prev = GetNode(index-1);
+			prev = GetNode(index - 1);
 			next = prev->next;
 		}
 
-
-		Node* node = new Node(item, prev, next);
+		Node * node = new Node(item, prev, next);
 		if(prev != nullptr)
 		{
 			prev->next = node;
@@ -136,7 +137,7 @@ public:
 
 	void RemoveAt(size_t index)
 	{
-		Node* toBeRemoved = GetNode(index);
+		Node * toBeRemoved = GetNode(index);
 		if(toBeRemoved->prev != nullptr)
 		{
 			toBeRemoved->prev->next = toBeRemoved->next;
@@ -159,10 +160,10 @@ public:
 		length--;
 	}
 
-	LinkedList<T>* Concat(LinkedList<T> * list) const
+	LinkedList<T> * Concat(LinkedList<T> * list) const
 	{
-		LinkedList<T>* copy = new LinkedList(*this);
-		for(Node* i = list->head; i != nullptr; i = i->next)
+		LinkedList<T> * copy = new LinkedList(*this);
+		for(Node * i = list->head; i != nullptr; i = i->next)
 		{
 			copy->Append(i->data);
 		}
@@ -172,28 +173,35 @@ public:
 	{
 		if(head != nullptr)
 		{
-			for(Node* i = head->next; i != nullptr; i = i->next)
+			for(Node * i = head->next; i != nullptr; i = i->next)
 			{
 				delete i->prev;
 			}
 		}
 		delete tail;
 	}
+
 private:
-	class Node {
+	class Node
+	{
 	public:
-		Node(T data, Node* prev = nullptr, Node* next = nullptr) :
-			data(data), prev(prev), next(next) {}
-		
-		Node(Node* prev = nullptr, Node* next = nullptr) :
-			prev(prev), next(next) {}
-		
+		Node(T data, Node * prev = nullptr, Node * next = nullptr) :
+			data(data),
+			prev(prev),
+			next(next)
+		{}
+
+		Node(Node * prev = nullptr, Node * next = nullptr) :
+			prev(prev),
+			next(next)
+		{}
+
 		T data;
-		Node* prev;
-		Node* next;
+		Node * prev;
+		Node * next;
 	};
 
-	Node* GetNode(size_t index) const
+	Node * GetNode(size_t index) const
 	{
 		if(index >= length)
 		{
@@ -202,7 +210,7 @@ private:
 
 		if(index < length - index)
 		{
-			Node* node = head;
+			Node * node = head;
 			for(size_t i = 0; i < index; ++i)
 			{
 				node = node->next;
@@ -212,8 +220,8 @@ private:
 		}
 		else
 		{
-			Node* node = tail;
-			for(size_t i = length-1; i > index; --i)
+			Node * node = tail;
+			for(size_t i = length - 1; i > index; --i)
 			{
 				node = node->prev;
 			}
@@ -222,7 +230,7 @@ private:
 		}
 	}
 
-	Node* head = nullptr;
-	Node* tail = nullptr;
+	Node * head = nullptr;
+	Node * tail = nullptr;
 	size_t length = 0;
 };
