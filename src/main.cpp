@@ -14,14 +14,14 @@ using namespace std;
 
 std::ostream & operator<<(std::ostream & out, const Buffer & buffer)
 {
-	out << "┌───────────────┬────────────┬───────────┐\n"
-		   "│    address    │    size    │   state   │\n"
-		   "├───────────────┼────────────┼───────────┤\n";
+	out << "┌─────────────────┬────────────┬───────────┐\n"
+		   "│     address     │    size    │   state   │\n"
+		   "├─────────────────┼────────────┼───────────┤\n";
 	buffer.IterateThroughZones([&](Buffer::Zone z, uintptr_t addr) {
-		out << std::left << "│ " << std::setw(13) << (void *)addr << " │ " << std::setw(10)
+		out << std::left << "│ " << std::setw(15) << (void *)addr << " │ " << std::setw(10)
 			<< z.size << " │ " << std::setw(9) << (z.isFree ? "free" : "occupied") << " │\n";
 	});
-	out << "└───────────────┴────────────┴───────────┘\n";
+	out << "└─────────────────┴────────────┴───────────┘\n";
 	return out;
 }
 
@@ -122,7 +122,15 @@ int main()
 			}
 			else
 			{
-				vars.Add(args.variable, allocator.Alloc(args.size));
+				void* ptr = allocator.Alloc(args.size, 1);
+				if(ptr != nullptr)
+				{
+					vars.Add(args.variable, ptr);
+				}
+				else
+				{
+					cout << "Not enough memory.\n";
+				}
 			}
 		}
 
@@ -142,10 +150,17 @@ int main()
 				 << " alloc [variable-name] [size]"
 				 << " - "
 				 << "allocates [size] bytes and assigns it to [variable-name]\n"
-				 << " free  [variable-name]       "
+				 << " free [variable-name]        "
 				 << " - "
-				 << "free pointer associated with [variable-name]\n";
+				 << "free pointer associated with [variable-name]\n"
+				 << " print                       "
+				 << " - "
+				 << "prints buffer layout\n";
 		}
 	}
+	vars.Traversal([&](const string & name, void* const & ptr)
+	{
+		allocator.Free(ptr);
+	});
 	delete[] memory;
 }

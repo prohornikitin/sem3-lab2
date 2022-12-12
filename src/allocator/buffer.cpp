@@ -1,5 +1,5 @@
 #include <allocator/buffer.h>
-
+#include <iomanip>
 #include <exception>
 
 Buffer::Zone::Zone() {}
@@ -69,15 +69,19 @@ void Buffer::SplitFreeZoneIntoTwoIfRemain(size_t i, size_t sizeOfFirst)
 	}
 }
 
-void Buffer::MergeFreeZones(size_t firstZoneIndex)
+void Buffer::MergeFreeZones(size_t changedZoneIndex)
 {
-	for(size_t i = firstZoneIndex + 1; i < zones.GetLength(); ++i)
+	ssize_t firstFree = changedZoneIndex;
+	while(firstFree >= 0 && zones[firstFree].isFree) {
+		--firstFree;
+	}
+	firstFree++;
+	
+	size_t i = firstFree + 1;
+	while(i < zones.GetLength() &&
+		zones[i].isFree)
 	{
-		if(!zones[i].isFree)
-		{
-			break;
-		}
-		zones[firstZoneIndex].size += zones[i].size;
+		zones[firstFree].size += zones[i].size;
 		zones.RemoveAt(i);
 	}
 }

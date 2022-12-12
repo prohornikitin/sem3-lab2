@@ -214,6 +214,17 @@ private:
 		return newN;
 	}
 
+	void TraversalInternal(std::function<void(const K &, const V &)> f, Node * n)
+	{
+		if(n == nullptr)
+		{
+			return;
+		}
+		f(n->key, n->value);
+		TraversalInternal(f, n->left);
+		TraversalInternal(f, n->right);
+	}
+
 	bool TreeEqualInternal(Node * a, Node * b) const
 	{
 		if(a == nullptr || b == nullptr)
@@ -384,6 +395,11 @@ public:
 			}
 		}
 		return false;
+	}
+
+	void Traversal(std::function<void(const K &, const V &)> f)
+	{
+		TraversalInternal(f, root);
 	}
 
 	~TreeDictionary()

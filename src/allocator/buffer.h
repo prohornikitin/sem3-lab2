@@ -18,6 +18,7 @@ public:
 	};
 
 	Buffer(void * memory, size_t size);
+	Buffer(const Buffer & b) = delete;
 
 	void MarkFree(size_t i);
 	void MarkOccupied(size_t i);
@@ -26,7 +27,7 @@ public:
 	void IterateThroughZones(std::function<void(Zone z, uintptr_t addr)> func) const;
 
 	void SplitFreeZoneIntoTwoIfRemain(size_t i, size_t sizeOfFirst);
-	void MergeFreeZones(size_t firstZoneIndex);
+	void MergeFreeZones(size_t changedZoneIndex);
 
 private:
 	char * memory = nullptr;

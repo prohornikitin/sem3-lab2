@@ -1,5 +1,7 @@
 #include <allocator/allocator.h>
 
+std::ostream & operator<<(std::ostream & out, const Buffer & buffer);
+
 static uintptr_t Align(uintptr_t ptr, size_t alignment)
 {
 	return ptr + (((uintptr_t)ptr) & (alignment - 1));
@@ -13,14 +15,17 @@ void * Allocator::Alloc(size_t size, size_t alignment)
 {
 	uintptr_t addr;
 	auto maybeIndex = buffer.FindZone([&, alignment](Buffer::Zone z, uintptr_t startAddr) {
-		size_t sizeAfterAlign = z.size - (Align(startAddr, alignment) - startAddr);
-		if(z.isFree && sizeAfterAlign >= size)
-		{
-			addr = startAddr;
-
-			return true;
+		size_t alignOffset = (Align(startAddr, alignment) - startAddr);
+		if(!z.isFree || z.size <= alignOffset) {
+			return false;
 		}
-		return false;
+		size_t sizeAfterAlign = z.size - alignOffset;
+		if(sizeAfterAlign < size)
+		{
+			return false;
+		}
+		addr = startAddr;
+		return true;
 	});
 
 	if(!maybeIndex)
@@ -44,7 +49,7 @@ void Allocator::Free(void * ptr)
 {
 	size_t addr = (uintptr_t)ptr;
 	auto maybeIndex = buffer.FindZone([=](Buffer::Zone z, uintptr_t startAddr) {
-		return (startAddr <= addr && addr <= (startAddr + z.size));
+		return (startAddr <= addr && addr < (startAddr + z.size));
 	});
 	if(!maybeIndex)
 	{
